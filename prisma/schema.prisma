@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SeasonFormat {
+  PRE_GP
+  CLASSIC_SEMI
+  MODERN_LCQ
+}
+
+model Season {
+  id     String       @id @default(uuid())
+  year   String
+  name   String?
+  format SeasonFormat
+
+  rounds       Round[]
+  participants SeasonParticipant[]
+  standings    SeasonStanding[]
+
+  @@map("seasons")
+}
+
+model Rider {
+  id           String @id @default(uuid())
+  firstName    String
+  lastName     String
+  slug         String
+  nationality  String
+  dateOfBirth  String
+  placeOfBirth String
+  fimNumber    String
+  fimRanking   String
+  debut        String
+  firstWin     String
+  imageUrl     String
+  bio          String
+
+  seasons        SeasonParticipant[]
+  rounds         RoundEntry[]
+  startNumbers   StartNumberDraw[]
+  heatResults    HeatResult[]
+  roundResults   RoundResult[]
+  SeasonStanding SeasonStanding[]
+
+  @@map("riders")
+}
+
+model Round {
+  id          String @id @default(uuid())
+  season      Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  seasonId    String
+  roundNumber String
+
+  event          EventDetails @relation(fields: [eventDetailsId], references: [id], onDelete: Cascade)
+  eventDetailsId String       @unique // Dodałem @unique dla relacji jeden-do-jednego
+
+  riders     RoundEntry[]
+  startOrder StartNumberDraw[]
+  heats      Heat[]
+  results    RoundResult[]
+  gateStats  GateStats[]
+
+  @@map("rounds")
+}
+
+model EventDetails {
+  id       String @id @default(uuid())
+  name     String
+  date     String
+  venue    String
+  capacity String
+  imageUrl String
+
+  round Round? // Relacja zwrotna
+
+  @@map("event_details")
+}
+
+enum RiderRoleInRound {
+  PERMANENT
+  SUBSTITUTION
+  WILD_CARD
+  TRACK_RESERVE
+}
+
+model RoundEntry {
+  id      String @id @default(uuid())
+  round   Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  roundId String
+
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  riderId String
+
+  role RiderRoleInRound
+
+  @@unique([roundId, riderId])
+  @@map("round_entries")
+}
+
+model SeasonParticipant {
+  id       String @id @default(uuid())
+  season   Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  seasonId String
+
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  riderId String
+
+  @@unique([seasonId, riderId])
+  @@map("season_participants")
+}
+
+model StartNumberDraw {
+  id      String @id @default(uuid())
+  round   Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  roundId String
+
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  riderId String
+
+  number String
+
+  @@unique([roundId, number])
+  @@unique([roundId, riderId])
+  @@map("start_number_draws")
+}
+
+model Heat {
+  id         String @id @default(uuid())
+  round      Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  roundId    String
+  heatNumber String
+
+  results HeatResult[]
+
+  @@map("heats")
+}
+
+model HeatResult {
+  id     String @id @default(uuid())
+  heat   Heat   @relation(fields: [heatId], references: [id], onDelete: Cascade)
+  heatId String
+
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  riderId String
+
+  gate     String
+  points   String
+  position String
+
+  @@map("heat_results")
+}
+
+model RoundResult {
+  id      String @id @default(uuid())
+  round   Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  roundId String
+
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  riderId String
+
+  totalPoints String
+  finalPlace  String
+
+  @@unique([roundId, riderId])
+  @@map("round_results")
+}
+
+model GateStats {
+  id      String @id @default(uuid())
+  round   Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  roundId String
+
+  gateNumber    String
+  starts        String
+  totalPoints   String
+  winPrecentage Float
+
+  @@map("gate_stats")
+}
+
+model SeasonStanding {
+  id       String @id @default(uuid())
+  season   Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  seasonId String
+
+  rider   Rider  @relation(fields: [riderId], references: [id], onDelete: Cascade)
+  riderId String
+
+  totalPoints Int
+  finalPlace  Int
+
+  @@unique([seasonId, riderId])
+  @@map("season_standings")
+}
