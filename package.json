@@ -1,0 +1,29 @@
+{
+  "name": "speedway-almanac",
+  "version": "1.0.0",
+  "description": "",
+  "workspaces": [
+    "api",
+    "client"
+  ],
+  "scripts": {
+    "api": "npm run dev -w api",
+    "client": "npm run dev -w client",
+    "start": "concurrently \"npm run api\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ostafinskim/speedway-almanac.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ostafinskim/speedway-almanac/issues"
+  },
+  "homepage": "https://github.com/ostafinskim/speedway-almanac#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
