@@ -10,10 +10,10 @@ const isTest = process.env.APP_STAGE === 'test'
 
 // Load .env files based on environment
 if (isDevelopment) {
-	loadEnv()        // Loads .env
+	loadEnv('dev')        // Loads .env.dev
 } else if (isTest) {
 	loadEnv('test')  // Loads .env.test
-}
+} 
 
 // Define validation schema with Zod
 const envSchema = z.object({
