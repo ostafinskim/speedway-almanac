@@ -1,17 +1,34 @@
 import cors from 'cors'
-import express from 'express'
+import express, { type Request, type Response } from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
-import { isTestEnv } from '../env.ts'
+import { env, isDev, isTestEnv } from '../env.ts'
 
-export const app = express()
+const app = express()
 
 app.use(helmet())
-app.use(cors())
+app.use(
+	cors({
+		origin: env.CORS_ORIGIN,
+		credentials: true,
+	})
+)
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(morgan('tiny', { skip: () => isTestEnv() }))
+app.use(
+	morgan('dev', {
+		skip: () => isTestEnv(),
+	})
+)
 
-app.get('/health', (req, res) => {
-	res.json({ message: 'Doing good!' })
+app.get('/health', (req: Request, res: Response) => {
+	res.status(200).json({
+		status: 'OK',
+		timestamp: new Date().toISOString(),
+		service: 'Speedway Almanac API',
+	})
 })
+
+export { app }
+export default app

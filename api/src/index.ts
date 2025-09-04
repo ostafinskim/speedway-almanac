@@ -4,9 +4,8 @@ import { app } from './server.ts';
 async function main() {
 	try {
 		app.listen(env.PORT, () => {
-			console.log(`http://localhost:${env.PORT}`)
-			console.log('NODE_ENV:', process.env.NODE_ENV);
-			console.log('APP_STAGE:', process.env.APP_STAGE);
+			console.log(`Server running on port ${env.PORT}`)
+			console.log(`Environment: ${env.APP_STAGE}`)
 		})
 	} catch (error) {
 		console.error(error.message)

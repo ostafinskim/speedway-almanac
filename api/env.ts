@@ -10,7 +10,7 @@ const isTest = process.env.APP_STAGE === 'test'
 
 // Load .env files based on environment
 if (isDevelopment) {
-	loadEnv('dev')        // Loads .env.dev
+	loadEnv()        // Loads .env.dev
 } else if (isTest) {
 	loadEnv('test')  // Loads .env.test
 } 
@@ -25,7 +25,7 @@ const envSchema = z.object({
 	APP_STAGE: z.enum(['dev', 'production', 'test']).default('dev'),
 
 	// Server configuration
-	PORT: z.coerce.number().positive().default(3000),
+	PORT: z.coerce.number().positive().default(3333),
 	HOST: z.string().default('localhost'),
 
 	// Database
