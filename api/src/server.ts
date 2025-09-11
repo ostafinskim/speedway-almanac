@@ -16,11 +16,7 @@ app.use(
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(
-	morgan('dev', {
-		skip: () => isTestEnv(),
-	})
-)
+app.use(morgan('dev', { skip: () => isTestEnv() }))
 
 app.get('/health', (req: Request, res: Response) => {
 	res.status(200).json({

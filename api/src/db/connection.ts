@@ -5,9 +5,16 @@ import { env, isProd } from '../../env.ts'
 import { remember } from '@epic-web/remember'
 
 const createPool = () => {
-	return new Pool({
+	const pool = new Pool({
 		connectionString: env.DATABASE_URL
 	})
+	pool.on('connect', () => {
+		console.log('✅ Database connected')
+	})
+	pool.on('error', (err) => {
+		console.error('❌ Database connection error:', err)
+	})
+	return pool
 }
 
 let client
