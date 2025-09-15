@@ -4,26 +4,7 @@ import * as schema from './schema.ts'
 import { env, isProd } from '../../env.ts'
 import { remember } from '@epic-web/remember'
 
-const createPool = () => {
-	const pool = new Pool({
-		connectionString: env.DATABASE_URL
-	})
-	pool.on('connect', () => {
-		console.log('✅ Database connected')
-	})
-	pool.on('error', (err) => {
-		console.error('❌ Database connection error:', err)
-	})
-	return pool
-}
+export const pool = isProd() ? new Pool({ connectionString: env.DATABASE_URL }) : remember('dbPool', () => new Pool({ connectionString: env.DATABASE_URL }))
 
-let client
-
-if (isProd) {
-	client = createPool()
-} else {
-	client = remember('dbPool', () => createPool())
-}
-
-export const db = drizzle({ client, schema })
+export const db = drizzle({ client: pool, schema })
 export default db
