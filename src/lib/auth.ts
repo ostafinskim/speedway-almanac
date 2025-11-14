@@ -2,8 +2,30 @@ import { db } from "@/db/db";
 import { getVerificationEmailHtml } from "@/emails/auth-templates";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { openAPI } from "better-auth/plugins";
+import { admin, openAPI } from "better-auth/plugins";
 import { Resend } from "resend";
+
+type BetterAuthContext = {
+	path: string;
+	context: {
+		newSession?: {
+			user: {
+				id: string;
+				email: string;
+				name: string;
+				role?: string;
+			};
+		};
+		returned?: {
+			user: {
+				id: string;
+				email: string;
+				name: string;
+				role?: string;
+			};
+		};
+	};
+};
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -33,7 +55,25 @@ export const auth = betterAuth({
 			});
 		}
 	},
+	// add role to response
+	hooks: {
+		after: async (ctx) => {
+			const typedCtx = ctx as unknown as BetterAuthContext;
+			if (typedCtx.path === "/sign-in/email" || typedCtx.path === "/sign-up/email") {
+				const newSession = typedCtx.context.newSession;
+				if (newSession?.user?.role && typedCtx.context.returned?.user) {
+					typedCtx.context.returned.user.role = newSession.user.role;
+				}
+			}
+			return ctx;
+		}
+	},
 	plugins: [
+		admin({
+			defaultRole: "user",
+			adminRoles: ["admin"],
+			adminUserIds: [process.env.ADMIN_USER_ID!]
+		}),
 		openAPI()
 	]
 }

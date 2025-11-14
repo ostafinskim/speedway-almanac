@@ -1,4 +1,5 @@
 import * as schema from '@/db/schema';
+import { asc, isNull } from 'drizzle-orm';
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
@@ -20,4 +21,19 @@ export async function testDBConnection() {
 		console.error('❌ Database connection failed:', error);
 		return false;
 	}
+}
+
+export async function listUsers() {
+	return await db.select({
+		id: schema.user.id,
+		name: schema.user.name,
+		email: schema.user.email,
+		role: schema.user.role,
+		createdAt: schema.user.createdAt,
+	}).from(schema.user).orderBy(asc(schema.user.name));
+}
+
+export async function updateExistingUsersRole() {
+	await db.update(schema.user).set({ role: 'user' }).where(isNull(schema.user.role));
+	console.log('Updated existing users with default role "user"');
 }
