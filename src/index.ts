@@ -1,9 +1,9 @@
-import { listUsers, testDBConnection } from '@/db/db'
+import { testDBConnection } from '@/db/db'
 import { auth } from '@/lib/auth'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { authMiddleware } from './middleware/auth'
-import { ensureAdmin } from './middleware/ensureAdmin'
+import { clubs } from './routes/club-routes'
+import { riders } from './routes/rider-routes'
 
 const port = process.env.PORT || 3000
 
@@ -21,13 +21,11 @@ app.use(
   }),
 );
 
-app
-  .on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
-  .get("/api/admin/users", authMiddleware, ensureAdmin, async (c) => {
-    const users = await listUsers();
-    return c.json(users);
-  })
+app.on(['POST', 'GET'], '/api/auth/*', (c) => auth.handler(c.req.raw))
 
+// Custom routes
+app.route('/api/v1/club', clubs)
+app.route('/api/v1/rider', riders)
 
 // test db connection
 testDBConnection()
