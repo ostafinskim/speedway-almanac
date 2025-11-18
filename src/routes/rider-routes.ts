@@ -17,6 +17,16 @@ riders.get('/', (c) => {
 	}
 });
 
+riders.get('/:id', (c) => {
+	// TODO: fetch single rider
+	const { id } = c.req.param
+	try {
+		return c.json({ message: 'All club list' });
+	} catch (error) {
+		return c.json({ error: 'Failed to fetch clubs' }, 500)
+	}
+});
+
 // POST /api/v1/rider - create rider
 riders.post('/', ensureAdmin, async (c) => {
 	const body = await c.req.json();

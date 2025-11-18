@@ -17,6 +17,18 @@ clubs.get('/', (c) => {
 	}
 });
 
+// GET /api/v1/club/:id - get all clubs
+clubs.get('/:id', (c) => {
+	// TODO: fetch single club
+	const { id } = c.req.param
+	try {
+		return c.json({ message: 'All club list' });
+	} catch (error) {
+		return c.json({ error: 'Failed to fetch clubs' }, 500)
+	}
+});
+
+
 // POST /api/v1/club - create club
 clubs.post('/', ensureAdmin, async (c) => {
 	const body = await c.req.json();
