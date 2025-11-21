@@ -1,35 +1,21 @@
 import { db } from "@/db/db";
-import { getVerificationEmailHtml } from "@/emails/auth-templates";
+import { accounts, sessions, users, verifications } from "@/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin, openAPI } from "better-auth/plugins";
+import { count, eq } from "drizzle-orm";
 import { Resend } from "resend";
-
-type BetterAuthContext = {
-	path: string;
-	context: {
-		newSession?: {
-			user: {
-				id: string;
-				email: string;
-				name: string;
-				role?: string;
-			};
-		};
-		returned?: {
-			user: {
-				id: string;
-				email: string;
-				name: string;
-				role?: string;
-			};
-		};
-	};
-};
+import { getVerificationEmailHtml } from "../emails/auth-templates";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
-		provider: 'pg'
+		provider: 'pg',
+		schema: {
+			user: users,
+			session: sessions,
+			account: accounts,
+			verification: verifications
+		}
 	}),
 	emailAndPassword: {
 		enabled: true,
@@ -55,26 +41,39 @@ export const auth = betterAuth({
 			});
 		}
 	},
-	// add role to response
-	hooks: {
-		after: async (ctx) => {
-			const typedCtx = ctx as unknown as BetterAuthContext;
-			if (typedCtx.path === "/sign-in/email" || typedCtx.path === "/sign-up/email") {
-				const newSession = typedCtx.context.newSession;
-				if (newSession?.user?.role && typedCtx.context.returned?.user) {
-					typedCtx.context.returned.user.role = newSession.user.role;
-				}
-			}
-			return ctx;
-		}
-	},
 	plugins: [
 		admin({
 			defaultRole: "user",
 			adminRoles: ["admin"],
-			adminUserIds: [process.env.ADMIN_USER_ID!]
 		}),
 		openAPI()
-	]
-}
-)
+	],
+	// Use database hooks to make first user an admin
+	databaseHooks: {
+		user: {
+			create: {
+				after: async (user) => {
+					try {
+						// Count total users in the database
+						const userCount = await db.select({ count: count() }).from(users);
+						const totalUsers = Number(userCount[0]?.count || 0);
+
+						// If this is the first user, make them admin
+						if (totalUsers === 1) {
+							await db
+								.update(users)
+								.set({ role: "admin" })
+								.where(eq(users.id, user.id));
+
+							console.log("✅ First user created as admin:", user.email);
+						} else {
+							console.log("👤 New user created:", user.email);
+						}
+					} catch (error) {
+						console.error("❌ Error checking/setting admin role:", error);
+					}
+				}
+			}
+		}
+	}
+})
