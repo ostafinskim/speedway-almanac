@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { getClubById } from "../db/queries";
 import { authMiddleware } from "../middleware/auth";
 import { ensureAdmin } from "../middleware/ensureAdmin";
 import type { AuthUserAndSession } from "../types";
@@ -18,11 +19,12 @@ clubs.get('/', (c) => {
 });
 
 // GET /api/v1/club/:id - get all clubs
-clubs.get('/:id', (c) => {
+clubs.get('/:id', async (c) => {
 	// TODO: fetch single club
-	const { id } = c.req.param
+	const { id } = c.req.param()
 	try {
-		return c.json({ message: 'All club list' });
+		const club = await getClubById(id)
+		return c.json({ club });
 	} catch (error) {
 		return c.json({ error: 'Failed to fetch clubs' }, 500)
 	}

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { getRiderById } from "../db/queries";
 import { authMiddleware } from "../middleware/auth";
 import { ensureAdmin } from "../middleware/ensureAdmin";
 import type { AuthUserAndSession } from "../types";
@@ -17,11 +18,12 @@ riders.get('/', (c) => {
 	}
 });
 
-riders.get('/:id', (c) => {
+riders.get('/:id', async (c) => {
 	// TODO: fetch single rider
-	const { id } = c.req.param
+	const { id } = c.req.param()
 	try {
-		return c.json({ message: 'All club list' });
+		const rider = await getRiderById(id)
+		return c.json({ rider });
 	} catch (error) {
 		return c.json({ error: 'Failed to fetch clubs' }, 500)
 	}

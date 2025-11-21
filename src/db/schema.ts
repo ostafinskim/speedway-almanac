@@ -1,6 +1,6 @@
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
-export const user = pgTable("user", {
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -17,7 +17,7 @@ export const user = pgTable("user", {
   banExpires: timestamp("ban_expires"),
 });
 
-export const session = pgTable("session", {
+export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
   expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
@@ -29,17 +29,17 @@ export const session = pgTable("session", {
   userAgent: text("user_agent"),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => users.id, { onDelete: "cascade" }),
   impersonatedBy: text("impersonated_by"),
 });
 
-export const account = pgTable("account", {
+export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => users.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
@@ -53,7 +53,7 @@ export const account = pgTable("account", {
     .notNull(),
 });
 
-export const verification = pgTable("verification", {
+export const verifications = pgTable("verifications", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
@@ -65,7 +65,7 @@ export const verification = pgTable("verification", {
     .notNull(),
 });
 
-export const club = pgTable("club", {
+export const clubs = pgTable("clubs", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -78,13 +78,13 @@ export const club = pgTable("club", {
     .notNull()
 });
 
-export const rider = pgTable("rider", {
+export const riders = pgTable("riders", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   photo: text("photo"),
-  currentClubId: text("current_club_id").references(() => club.id),
+  currentClubId: text("current_club_id").references(() => clubs.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -98,10 +98,10 @@ export const riderClubs = pgTable("rider_clubs", {
     .$defaultFn(() => crypto.randomUUID()),
   riderId: text("rider_id")
     .notNull()
-    .references(() => rider.id, { onDelete: "cascade" }),
+    .references(() => riders.id, { onDelete: "cascade" }),
   clubId: text("club_id")
     .notNull()
-    .references(() => club.id, { onDelete: "cascade" }),
+    .references(() => clubs.id, { onDelete: "cascade" }),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date")
 });

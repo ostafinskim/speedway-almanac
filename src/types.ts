@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 import { InferInsertModel, InferSelectModel } from "drizzle-orm"
-import { club, rider } from "./db/schema"
+import { clubs, riders } from "./db/schema"
 
 export type AuthUserAndSession = {
 	Variables: {
@@ -9,8 +9,8 @@ export type AuthUserAndSession = {
 	}
 }
 
-export type Rider = InferSelectModel<typeof rider>
-export type NewRider = InferInsertModel<typeof rider>
+export type Rider = InferSelectModel<typeof riders>
+export type NewRider = InferInsertModel<typeof riders>
 
-export type Club = InferInsertModel<typeof club>
-export type NewClub = InferInsertModel<typeof club>
+export type Club = InferInsertModel<typeof clubs>
+export type NewClub = InferInsertModel<typeof clubs>
